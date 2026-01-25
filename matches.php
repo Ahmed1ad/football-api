@@ -1,7 +1,8 @@
 <?php
-header("Content-Type: application/json");
+header("Content-Type: application/json; charset=UTF-8");
+
 include "db.php";
 
-$q = $pdo->query("SELECT * FROM matches");
+$stmt = $pdo->query("SELECT * FROM matches ORDER BY match_time");
 
-echo json_encode($q->fetchAll(PDO::FETCH_ASSOC));
+echo json_encode($stmt->fetchAll());
