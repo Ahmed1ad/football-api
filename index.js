@@ -1,5 +1,6 @@
 const express = require("express");
 const cors = require("cors");
+const { Pool } = require("pg");
 
 const app = express();
 app.use(cors());
@@ -7,24 +8,17 @@ app.use(express.json());
 
 const PORT = process.env.PORT || 3000;
 
-/* ================= DATA ================= */
+// 🔐 Neon connection (from Render Environment Variables)
+const NEON_URL = process.env.DATABASE_URL;
 
-const leagues = [
-  { id: 1, name: "Premier League", logo: "https://i.postimg.cc/dVcD8QfJ/الدوري_الانجليزي.png" },
-  { id: 2, name: "La Liga", logo: "https://i.postimg.cc/qvj5HqyL/الدوري_الاسباني.png" }
-];
+if (!NEON_URL) {
+  console.error("DATABASE_URL is not set");
+  process.exit(1);
 
-const teams = [
-  { id: 1, name: "Al Ahly", logo: "https://i.postimg.cc/3rnW3pJx/Al_Ahly_SC.png" },
-  { id: 2, name: "Zamalek", logo: "https://i.postimg.cc/133cJVW4/الزمالك.png" },
-  { id: 3, name: "Barcelona", logo: "https://i.postimg.cc/FFyGMVDc/برشلونة.png" },
-  { id: 4, name: "Real Madrid", logo: "https://i.postimg.cc/SNswGPfV/ريال_مدريد.png" }
-];
-
-let matches = [
-  { id: 1, league_id: 1, home_team: 1, away_team: 2, match_time: "2026-01-27T21:00:00Z" },
-  { id: 2, league_id: 2, home_team: 3, away_team: 4, match_time: "2026-01-27T23:00:00Z" }
-];
+const pool = new Pool({
+  connectionString: NEON_URL,
+  ssl: { rejectUnauthorized: false }
+});
 
 /* ================= HELPERS ================= */
 
@@ -41,101 +35,133 @@ function statusInfo(time) {
   return { status: "ended", minute: 90 };
 }
 
-// fake scores
-function fakeScore(min) {
-  if (!min) return { home: null, away: null };
-  return {
-    home: Math.floor(min / 30),
-    away: Math.floor(min / 40)
-  };
-}
-
-function formatMatch(m) {
-  const league = leagues.find(l => l.id === m.league_id);
-  const home = teams.find(t => t.id === m.home_team);
-  const away = teams.find(t => t.id === m.away_team);
-
-  const info = statusInfo(m.match_time);
-  const score = fakeScore(info.minute);
-
-  return {
-    id: m.id,
-    league,
-    home,
-    away,
-    match_time: m.match_time,
-    status: info.status,
-    minute: info.minute,
-    score
-  };
-}
-
 /* ================= ROUTES ================= */
 
 app.get("/", (req,res)=>{
   res.json({status:"Football API Running 🚀"});
 });
 
-/* -------- Matches (pagination) ---------- */
+/* -------- Leagues -------- */
 
-app.get("/matches", (req,res)=>{
+app.get("/leagues", async (req,res)=>{
+  const { rows } = await pool.query("SELECT * FROM leagues ORDER BY id");
+  res.json(rows);
+});
+
+app.post("/admin/league", async (req,res)=>{
+  const { name, logo, link } = req.body;
+  const { rows } = await pool.query(
+    "INSERT INTO leagues(name,logo,link) VALUES($1,$2,$3) RETURNING id",
+    [name, logo, link]
+  );
+  res.json({ success:true, id: rows[0].id });
+});
+
+/* -------- Teams -------- */
+
+app.get("/teams", async (req,res)=>{
+  const { rows } = await pool.query("SELECT * FROM teams ORDER BY id");
+  res.json(rows);
+});
+
+app.post("/admin/team", async (req,res)=>{
+  const { name, logo, link } = req.body;
+  const { rows } = await pool.query(
+    "INSERT INTO teams(name,logo,link) VALUES($1,$2,$3) RETURNING id",
+    [name, logo, link]
+  );
+  res.json({ success:true, id: rows[0].id });
+});
+
+app.get("/teams/search", async (req,res)=>{
+  const q = `%${(req.query.q||"").toLowerCase()}%`;
+  const { rows } = await pool.query(
+    "SELECT * FROM teams WHERE LOWER(name) LIKE $1",
+    [q]
+  );
+  res.json(rows);
+});
+
+/* -------- Matches -------- */
+
+app.get("/matches", async (req,res)=>{
   const page = parseInt(req.query.page || 1);
-  const limit = parseInt(req.query.limit || 5);
+  const limit = parseInt(req.query.limit || 10);
+  const offset = (page-1)*limit;
 
-  const start = (page-1)*limit;
-  const end = start + limit;
+  const { rows } = await pool.query(`
+    SELECT m.*, 
+      l.id as league_id2, l.name as league_name, l.logo as league_logo, l.link as league_link,
+      th.id as home_id, th.name as home_name, th.logo as home_logo,
+      ta.id as away_id, ta.name as away_name, ta.logo as away_logo
+    FROM matches m
+    LEFT JOIN leagues l ON m.league_id = l.id
+    LEFT JOIN teams th ON m.home_team = th.id
+    LEFT JOIN teams ta ON m.away_team = ta.id
+    ORDER BY m.match_time
+    LIMIT $1 OFFSET $2
+  `,[limit, offset]);
 
-  const data = matches.map(formatMatch);
-
-  res.json({
-    page,
-    total: data.length,
-    results: data.slice(start,end)
-  });
-});
-
-/* -------- Live / Soon / Ended -------- */
-
-app.get("/matches/:type", (req,res)=>{
-  const type = req.params.type;
-  const data = matches.map(formatMatch).filter(m=>m.status===type);
-  res.json(data);
-});
-
-/* -------- By League -------- */
-
-app.get("/league/:id", (req,res)=>{
-  const id = parseInt(req.params.id);
-  res.json(matches.filter(m=>m.league_id===id).map(formatMatch));
-});
-
-/* -------- Search Teams -------- */
-
-app.get("/teams/search", (req,res)=>{
-  const q = (req.query.q || "").toLowerCase();
-  res.json(teams.filter(t=>t.name.toLowerCase().includes(q)));
-});
-
-/* -------- Admin Add Match -------- */
-
-app.post("/admin/match", (req,res)=>{
-  const {league_id, home_team, away_team, match_time} = req.body;
-
-  const id = matches.length + 1;
-
-  matches.push({
-    id,
-    league_id,
-    home_team,
-    away_team,
-    match_time
+  const results = rows.map(r=>{
+    const info = statusInfo(r.match_time);
+    return {
+      id: r.id,
+      league: { id:r.league_id2, name:r.league_name, logo:r.league_logo, link:r.league_link },
+      home: { id:r.home_id, name:r.home_name, logo:r.home_logo },
+      away: { id:r.away_id, name:r.away_name, logo:r.away_logo },
+      match_time: r.match_time,
+      status: info.status,
+      minute: info.minute,
+      score: { home: r.home_score, away: r.away_score },
+      stream: r.stream || ""
+    };
   });
 
-  res.json({success:true,id});
+  res.json({ page, total: results.length, results });
 });
 
-/* ================= START ================= */
-
-app.listen(PORT, ()=>{
-  console.log("API running on "+PORT);
+app.get("/matches/:type(live|soon|ended)", async (req,res)=>{
+  const all = (await pool.query("SELECT match_time, id FROM matches")).rows;
+  const ids = all.filter(m=>statusInfo(m.match_time).status===req.params.type).map(x=>x.id);
+  if(!ids.length) return res.json([]);
+  const { rows } = await pool.query("SELECT * FROM matches WHERE id = ANY($1)", [ids]);
+  res.json(rows);
 });
+
+app.get("/league/:id", async (req,res)=>{
+  const { rows } = await pool.query("SELECT * FROM matches WHERE league_id=$1 ORDER BY match_time",[req.params.id]);
+  res.json(rows);
+});
+
+app.post("/admin/match", async (req,res)=>{
+  const { league_id, home_team, away_team, match_time, score, stream } = req.body;
+
+  const { rows } = await pool.query(
+    `INSERT INTO matches(league_id,home_team,away_team,match_time,home_score,away_score,stream)
+     VALUES($1,$2,$3,$4,$5,$6,$7) RETURNING id`,
+    [
+      league_id, home_team, away_team, match_time,
+      score?.home ?? null, score?.away ?? null, stream || ""
+    ]
+  );
+
+  res.json({ success:true, id: rows[0].id });
+});
+
+app.put("/admin/match/:id", async (req,res)=>{
+  const { match_time, home_score, away_score, stream } = req.body;
+
+  await pool.query(
+    `UPDATE matches SET 
+      match_time = COALESCE($1, match_time),
+      home_score = COALESCE($2, home_score),
+      away_score = COALESCE($3, away_score),
+      stream = COALESCE($4, stream)
+     WHERE id=$5`,
+    [match_time, home_score, away_score, stream, req.params.id]
+  );
+
+  res.json({ success:true });
+});
+
+app.listen(PORT, ()=> console.log("API running on "+PORT));
