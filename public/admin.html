@@ -1,170 +1,216 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-<meta charset="UTF-8">
-<title>Football Admin Dashboard</title>
+<meta charset="utf-8">
+<title>Football Admin</title>
 
 <style>
 body{
 margin:0;
-font-family:Arial;
-background:#0b1220;
+font-family:system-ui;
+background:#050b18;
 color:#fff;
 }
 
 header{
 padding:15px;
-background:#111a2e;
-font-size:20px;
+background:#0b1228;
 text-align:center;
+font-size:20px;
+font-weight:bold;
 }
 
-.container{
+.grid{
 display:grid;
-grid-template-columns:1fr 1fr 1fr;
+grid-template-columns:repeat(auto-fit,minmax(300px,1fr));
 gap:15px;
 padding:15px;
 }
 
 .card{
-background:#121c33;
-padding:15px;
-border-radius:10px;
+background:#0e1830;
+border-radius:12px;
+padding:12px;
+box-shadow:0 0 15px #000;
 }
 
-input,button{
+h3{margin:5px 0}
+
+input,select{
 width:100%;
 padding:8px;
-margin:5px 0;
 border-radius:6px;
 border:none;
+margin:4px 0;
+background:#091226;
+color:white;
 }
 
 button{
+padding:7px 12px;
+border:none;
+border-radius:6px;
 background:#1eb0a0;
-color:#000;
 font-weight:bold;
+margin-top:5px;
 }
 
 table{
 width:100%;
-border-collapse:collapse;
 font-size:13px;
+border-collapse:collapse;
 }
 
-td,th{
-border-bottom:1px solid #333;
+td{
+border-bottom:1px solid #222;
 padding:5px;
 }
 
-.success{
-color:#1eb0a0;
+.toast{
+position:fixed;
+bottom:20px;
+right:20px;
+background:#1eb0a0;
+color:black;
+padding:10px 15px;
+border-radius:8px;
+display:none;
 }
-
 </style>
 </head>
 
 <body>
 
-<header>⚽ Football Admin Dashboard</header>
+<header>⚽ Football Admin PRO</header>
 
-<div class="container">
+<div class="grid">
 
-<!-- League -->
 <div class="card">
 <h3>Add League</h3>
-<input id="lname" placeholder="League name">
+<input id="lname" placeholder="Name">
 <input id="llogo" placeholder="Logo URL">
-<input id="llink" placeholder="Website">
-<button onclick="addLeague()">Add League</button>
-<div id="leagueMsg"></div>
+<button onclick="addLeague()">Add</button>
 </div>
 
-<!-- Team -->
 <div class="card">
 <h3>Add Team</h3>
 <input id="tname" placeholder="Team name">
 <input id="tlogo" placeholder="Logo URL">
-<input id="tlink" placeholder="Website">
-<button onclick="addTeam()">Add Team</button>
-<div id="teamMsg"></div>
+<button onclick="addTeam()">Add</button>
 </div>
 
-<!-- Match -->
 <div class="card">
 <h3>Add Match</h3>
 <input id="league" placeholder="League ID">
 <input id="home" placeholder="Home Team ID">
 <input id="away" placeholder="Away Team ID">
 <input id="time" placeholder="2026-01-27T21:00:00Z">
-<input id="stream" placeholder="Stream URL">
-<button onclick="addMatch()">Add Match</button>
-<div id="matchMsg"></div>
+<button onclick="addMatch()">Add</button>
 </div>
 
 </div>
 
-<div class="container">
+<div class="grid">
 
 <div class="card">
-<h3>Leagues</h3>
-<table id="leagues"></table>
-</div>
-
-<div class="card">
-<h3>Teams</h3>
+<h3>Teams (edit)</h3>
 <table id="teams"></table>
 </div>
 
 <div class="card">
+<select id="filter" onchange="load()"></select>
 <h3>Matches</h3>
 <table id="matches"></table>
 </div>
 
 </div>
 
+<div id="toast" class="toast"></div>
+
 <script>
 const API="";
 
+function toast(t){
+toastEl.innerText=t;
+toastEl.style.display="block";
+setTimeout(()=>toastEl.style.display="none",2000);
+}
+
 async function addLeague(){
-const r=await fetch(API+"/admin/league",{method:"POST",headers:{'Content-Type':'application/json'},
-body:JSON.stringify({name:lname.value,logo:llogo.value,link:llink.value})});
-leagueMsg.innerHTML=(await r.json()).success?"✅ Added":"❌ Error";
-load();
+await fetch("/admin/league",{method:"POST",headers:{'Content-Type':'application/json'},
+body:JSON.stringify({name:lname.value,logo:llogo.value})});
+toast("League Added");
 }
 
 async function addTeam(){
-const r=await fetch(API+"/admin/team",{method:"POST",headers:{'Content-Type':'application/json'},
-body:JSON.stringify({name:tname.value,logo:tlogo.value,link:tlink.value})});
-teamMsg.innerHTML=(await r.json()).success?"✅ Added":"❌ Error";
-load();
+await fetch("/admin/team",{method:"POST",headers:{'Content-Type':'application/json'},
+body:JSON.stringify({name:tname.value,logo:tlogo.value})});
+toast("Team Added");
 }
 
 async function addMatch(){
-const r=await fetch(API+"/admin/match",{method:"POST",headers:{'Content-Type':'application/json'},
+await fetch("/admin/match",{method:"POST",headers:{'Content-Type':'application/json'},
+body:JSON.stringify({league_id:league.value,home_team:home.value,away_team:away.value,match_time:time.value})});
+toast("Match Added");
+}
+
+async function updateTeam(id){
+await fetch("/admin/team/"+id,{
+method:"PUT",
+headers:{'Content-Type':'application/json'},
 body:JSON.stringify({
-league_id:league.value,
-home_team:home.value,
-away_team:away.value,
-match_time:time.value,
-stream:stream.value
-})});
-matchMsg.innerHTML=(await r.json()).success?"✅ Added":"❌ Error";
-load();
+name:document.getElementById("tn"+id).value,
+logo:document.getElementById("tl"+id).value
+})
+});
+toast("Team Updated");
+}
+
+async function delMatch(id){
+if(confirm("Delete?")){
+await fetch("/admin/match/"+id,{method:"DELETE"});
+toast("Deleted");
+}
 }
 
 async function load(){
-let l=await fetch(API+"/leagues").then(r=>r.json());
-leagues.innerHTML="<tr><th>ID</th><th>Name</th></tr>"+l.map(x=>`<tr><td>${x.id}</td><td>${x.name}</td></tr>`).join("");
 
-let t=await fetch(API+"/teams").then(r=>r.json());
-teams.innerHTML="<tr><th>ID</th><th>Name</th></tr>"+t.map(x=>`<tr><td>${x.id}</td><td>${x.name}</td></tr>`).join("");
+let leagues=await fetch("/leagues").then(r=>r.json());
+filter.innerHTML="<option value=''>All leagues</option>"+leagues.map(l=>`<option value=${l.id}>${l.name}</option>`);
 
-let m=await fetch(API+"/matches").then(r=>r.json());
-matches.innerHTML="<tr><th>ID</th><th>Status</th></tr>"+m.results.map(x=>`<tr><td>${x.id}</td><td>${x.status}</td></tr>`).join("");
+let teams=await fetch("/teams").then(r=>r.json());
+teamsEl.innerHTML="";
+teams.forEach(t=>{
+teamsEl.innerHTML+=`
+<tr>
+<td>${t.id}</td>
+<td><input id=tn${t.id} value="${t.name}"></td>
+<td><input id=tl${t.id} value="${t.logo||""}"></td>
+<td><button onclick="updateTeam(${t.id})">💾</button></td>
+</tr>`;
+});
+
+let m=await fetch("/matches").then(r=>r.json());
+let list=m.results.filter(x=>!filter.value||x.league.id==filter.value);
+
+matchesEl.innerHTML="";
+list.forEach(x=>{
+matchesEl.innerHTML+=`
+<tr>
+<td>${x.id}</td>
+<td>${x.status}</td>
+<td>${x.home.name} vs ${x.away.name}</td>
+<td><button onclick="delMatch(${x.id})">🗑</button></td>
+</tr>`;
+});
 }
 
+const teamsEl=document.getElementById("teams");
+const matchesEl=document.getElementById("matches");
+const toastEl=document.getElementById("toast");
+
 load();
+setInterval(load,5000); // 🔴 LIVE REFRESH
 </script>
 
 </body>
