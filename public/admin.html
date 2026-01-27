@@ -150,7 +150,12 @@ toast("Team Added");
 
 async function addMatch(){
 await fetch("/admin/match",{method:"POST",headers:{'Content-Type':'application/json'},
-body:JSON.stringify({league_id:league.value,home_team:home.value,away_team:away.value,match_time:time.value})});
+body:JSON.stringify({
+league_id:league.value,
+home_team:home.value,
+away_team:away.value,
+match_time:time.value
+})});
 toast("Match Added");
 }
 
@@ -171,6 +176,20 @@ if(confirm("Delete?")){
 await fetch("/admin/match/"+id,{method:"DELETE"});
 toast("Deleted");
 }
+}
+
+async function saveMatch(id){
+await fetch("/admin/match/"+id,{
+method:"PUT",
+headers:{'Content-Type':'application/json'},
+body:JSON.stringify({
+home_score:document.getElementById("hs"+id).value,
+away_score:document.getElementById("as"+id).value,
+match_time:document.getElementById("mt"+id).value,
+stream:document.getElementById("st"+id).value
+})
+});
+toast("Match Updated");
 }
 
 async function load(){
@@ -198,9 +217,25 @@ list.forEach(x=>{
 matchesEl.innerHTML+=`
 <tr>
 <td>${x.id}</td>
-<td>${x.status}</td>
 <td>${x.home.name} vs ${x.away.name}</td>
-<td><button onclick="delMatch(${x.id})">🗑</button></td>
+
+<td>
+<input id=hs${x.id} value="${x.score.home||0}" size=1>
+<input id=as${x.id} value="${x.score.away||0}" size=1>
+</td>
+
+<td>
+<input id=mt${x.id} value="${x.match_time}">
+</td>
+
+<td>
+<input id=st${x.id} value="${x.stream||""}">
+</td>
+
+<td>
+<button onclick="saveMatch(${x.id})">💾</button>
+<button onclick="delMatch(${x.id})">🗑</button>
+</td>
 </tr>`;
 });
 }
@@ -210,8 +245,9 @@ const matchesEl=document.getElementById("matches");
 const toastEl=document.getElementById("toast");
 
 load();
-setInterval(load,5000); // 🔴 LIVE REFRESH
+setInterval(load,5000);
 </script>
 
+  
 </body>
 </html>
