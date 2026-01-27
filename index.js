@@ -11,18 +11,27 @@ const PORT = process.env.PORT || 3000;
 
 /* ================= NEON CONNECTION ================= */
 
+import pkg from "pg";
+const { Pool } = pkg;
+
 const NEON_URL = process.env.DATABASE_URL;
 
 if (!NEON_URL) {
-  console.error("DATABASE_URL is not set");
+  console.error("❌ DATABASE_URL is not set");
   process.exit(1);
 }
 
 const pool = new Pool({
   connectionString: NEON_URL,
-  ssl: { rejectUnauthorized: false }
+  ssl: {
+    require: true,
+    rejectUnauthorized: false
+  }
 });
 
+pool.query("select 1")
+.then(()=>console.log("✅ Neon connected"))
+.catch(e=>console.error("❌ Neon error",e));
 /* ================= HELPERS ================= */
 
 function statusInfo(time) {
