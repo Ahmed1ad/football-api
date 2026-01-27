@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Football Admin Dashboard</title>
+
+<style>
+body{
+margin:0;
+font-family:Arial;
+background:#0b1220;
+color:#fff;
+}
+
+header{
+padding:15px;
+background:#111a2e;
+font-size:20px;
+text-align:center;
+}
+
+.container{
+display:grid;
+grid-template-columns:1fr 1fr 1fr;
+gap:15px;
+padding:15px;
+}
+
+.card{
+background:#121c33;
+padding:15px;
+border-radius:10px;
+}
+
+input,button{
+width:100%;
+padding:8px;
+margin:5px 0;
+border-radius:6px;
+border:none;
+}
+
+button{
+background:#1eb0a0;
+color:#000;
+font-weight:bold;
+}
+
+table{
+width:100%;
+border-collapse:collapse;
+font-size:13px;
+}
+
+td,th{
+border-bottom:1px solid #333;
+padding:5px;
+}
+
+.success{
+color:#1eb0a0;
+}
+
+</style>
+</head>
+
+<body>
+
+<header>⚽ Football Admin Dashboard</header>
+
+<div class="container">
+
+<!-- League -->
+<div class="card">
+<h3>Add League</h3>
+<input id="lname" placeholder="League name">
+<input id="llogo" placeholder="Logo URL">
+<input id="llink" placeholder="Website">
+<button onclick="addLeague()">Add League</button>
+<div id="leagueMsg"></div>
+</div>
+
+<!-- Team -->
+<div class="card">
+<h3>Add Team</h3>
+<input id="tname" placeholder="Team name">
+<input id="tlogo" placeholder="Logo URL">
+<input id="tlink" placeholder="Website">
+<button onclick="addTeam()">Add Team</button>
+<div id="teamMsg"></div>
+</div>
+
+<!-- Match -->
+<div class="card">
+<h3>Add Match</h3>
+<input id="league" placeholder="League ID">
+<input id="home" placeholder="Home Team ID">
+<input id="away" placeholder="Away Team ID">
+<input id="time" placeholder="2026-01-27T21:00:00Z">
+<input id="stream" placeholder="Stream URL">
+<button onclick="addMatch()">Add Match</button>
+<div id="matchMsg"></div>
+</div>
+
+</div>
+
+<div class="container">
+
+<div class="card">
+<h3>Leagues</h3>
+<table id="leagues"></table>
+</div>
+
+<div class="card">
+<h3>Teams</h3>
+<table id="teams"></table>
+</div>
+
+<div class="card">
+<h3>Matches</h3>
+<table id="matches"></table>
+</div>
+
+</div>
+
+<script>
+const API="";
+
+async function addLeague(){
+const r=await fetch(API+"/admin/league",{method:"POST",headers:{'Content-Type':'application/json'},
+body:JSON.stringify({name:lname.value,logo:llogo.value,link:llink.value})});
+leagueMsg.innerHTML=(await r.json()).success?"✅ Added":"❌ Error";
+load();
+}
+
+async function addTeam(){
+const r=await fetch(API+"/admin/team",{method:"POST",headers:{'Content-Type':'application/json'},
+body:JSON.stringify({name:tname.value,logo:tlogo.value,link:tlink.value})});
+teamMsg.innerHTML=(await r.json()).success?"✅ Added":"❌ Error";
+load();
+}
+
+async function addMatch(){
+const r=await fetch(API+"/admin/match",{method:"POST",headers:{'Content-Type':'application/json'},
+body:JSON.stringify({
+league_id:league.value,
+home_team:home.value,
+away_team:away.value,
+match_time:time.value,
+stream:stream.value
+})});
+matchMsg.innerHTML=(await r.json()).success?"✅ Added":"❌ Error";
+load();
+}
+
+async function load(){
+let l=await fetch(API+"/leagues").then(r=>r.json());
+leagues.innerHTML="<tr><th>ID</th><th>Name</th></tr>"+l.map(x=>`<tr><td>${x.id}</td><td>${x.name}</td></tr>`).join("");
+
+let t=await fetch(API+"/teams").then(r=>r.json());
+teams.innerHTML="<tr><th>ID</th><th>Name</th></tr>"+t.map(x=>`<tr><td>${x.id}</td><td>${x.name}</td></tr>`).join("");
+
+let m=await fetch(API+"/matches").then(r=>r.json());
+matches.innerHTML="<tr><th>ID</th><th>Status</th></tr>"+m.results.map(x=>`<tr><td>${x.id}</td><td>${x.status}</td></tr>`).join("");
+}
+
+load();
+</script>
+
+</body>
+</html>
