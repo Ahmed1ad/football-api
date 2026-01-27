@@ -11,9 +11,6 @@ const PORT = process.env.PORT || 3000;
 
 /* ================= NEON CONNECTION ================= */
 
-import pkg from "pg";
-const { Pool } = pkg;
-
 const NEON_URL = process.env.DATABASE_URL;
 
 if (!NEON_URL) {
