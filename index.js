@@ -181,6 +181,55 @@ app.put("/admin/match/:id", async (req, res) => {
   res.json({ success: true });
 });
 
+
+
+app.delete("/admin/league/:id", async (req,res)=>{
+await pool.query("DELETE FROM leagues WHERE id=$1",[req.params.id]);
+res.json({success:true});
+});
+
+app.delete("/admin/team/:id", async (req,res)=>{
+await pool.query("DELETE FROM teams WHERE id=$1",[req.params.id]);
+res.json({success:true});
+});
+
+
+app.delete("/admin/match/:id", async (req,res)=>{
+await pool.query("DELETE FROM matches WHERE id=$1",[req.params.id]);
+res.json({success:true});
+});
+
+
+app.put("/admin/match/:id", async(req,res)=>{
+const {home_score,away_score,match_time,stream}=req.body;
+
+await pool.query(`
+UPDATE matches SET
+home_score=$1,
+away_score=$2,
+match_time=$3,
+stream=$4
+WHERE id=$5`,
+[home_score,away_score,match_time,stream,req.params.id]);
+
+res.json({success:true});
+});
+
+
+// update team
+app.put("/admin/team/:id", async(req,res)=>{
+const {name,logo}=req.body;
+
+await pool.query(`
+UPDATE teams SET name=$1, logo=$2 WHERE id=$3
+`,[name,logo,req.params.id]);
+
+res.json({success:true});
+});
+
+
+
+
 /* ================= START ================= */
 
 app.listen(PORT, () => {
