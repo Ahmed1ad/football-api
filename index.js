@@ -31,19 +31,38 @@ pool.query("select 1")
 .catch(e=>console.error("❌ Neon error",e));
 /* ================= HELPERS ================= */
 
-function statusInfo(time) {
-  const now = new Date();
+function statusInfo(time, tzOffsetMinutes = 0) {
+
+  // now with user timezone
+  const now = new Date(Date.now() + tzOffsetMinutes * 60000);
+
   const start = new Date(time);
-  const end = new Date(start.getTime() + 2 * 60 * 60 * 1000);
 
-  if (now < start) return { status: "soon", minute: null };
-  if (now >= start && now <= end) {
-    const min = Math.floor((now - start) / 60000);
-    return { status: "live", minute: min };
+  const diffMin = Math.floor((now - start) / 60000);
+
+  // لم تبدأ
+  if (diffMin < 0) {
+    return { status: "soon", minute: null, phase: "not_started" };
   }
-  return { status: "ended", minute: 90 };
-}
 
+  // الشوط الأول (0 → 45)
+  if (diffMin >= 0 && diffMin < 45) {
+    return { status: "live", minute: diffMin, phase: "first_half" };
+  }
+
+  // استراحة (45 → 55)
+  if (diffMin >= 45 && diffMin < 55) {
+    return { status: "break", minute: 45, phase: "half_time" };
+  }
+
+  // الشوط الثاني (55 → 100)
+  if (diffMin >= 55 && diffMin < 100) {
+    return { status: "live", minute: diffMin - 10, phase: "second_half" };
+  }
+
+  // انتهت
+  return { status: "ended", minute: 90, phase: "finished" };
+}
 /* ================= ROUTES ================= */
 
 app.get("/", (req, res) => {
@@ -100,6 +119,7 @@ app.get("/teams/search", async (req, res) => {
 /* -------- MATCHES -------- */
 
 app.get("/matches", async (req, res) => {
+  const tz = parseInt(req.query.tz || 0);
   const page = parseInt(req.query.page || 1);
   const limit = parseInt(req.query.limit || 10);
   const offset = (page - 1) * limit;
@@ -118,7 +138,7 @@ app.get("/matches", async (req, res) => {
   `, [limit, offset]);
 
   const results = rows.map(r => {
-    const info = statusInfo(r.match_time);
+    const info = statusInfo(r.match_time, tz);
     return {
       id: r.id,
       league: { id: r.league_id2, name: r.league_name, logo: r.league_logo, link: r.league_link },
