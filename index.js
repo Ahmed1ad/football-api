@@ -155,6 +155,7 @@ app.get("/matches", async (req, res) => {
   });
 
   res.json({ page, total: results.length, results });
+  io.emit("matches_updated");
 });
 
 app.get("/matches/:type(live|soon|ended)", async (req, res) => {
@@ -163,6 +164,7 @@ app.get("/matches/:type(live|soon|ended)", async (req, res) => {
   const filtered = rows.filter(m => statusInfo(m.match_time).status === req.params.type);
 
   res.json(filtered);
+  io.emit("matches_updated");
 });
 
 app.get("/league/:id", async (req, res) => {
