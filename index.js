@@ -1,6 +1,8 @@
 const express = require("express");
 const cors = require("cors");
 const { Pool } = require("pg");
+const http = require("http");
+const { Server } = require("socket.io");
 
 const app = express();
 app.use(cors());
@@ -187,7 +189,6 @@ app.post("/admin/match", async (req, res) => {
       stream || ""
     ]
   );
-
   res.json({ success: true, id: rows[0].id });
 });
 
@@ -205,6 +206,7 @@ app.put("/admin/match/:id", async (req, res) => {
   );
 
   res.json({ success: true });
+  io.emit("matches_updated");
 });
 
 
@@ -223,6 +225,7 @@ res.json({success:true});
 app.delete("/admin/match/:id", async (req,res)=>{
 await pool.query("DELETE FROM matches WHERE id=$1",[req.params.id]);
 res.json({success:true});
+io.emit("matches_updated");
 });
 
 
@@ -239,6 +242,7 @@ WHERE id=$5`,
 [home_score,away_score,match_time,stream,req.params.id]);
 
 res.json({success:true});
+io.emit("matches_updated");
 });
 
 
@@ -258,6 +262,20 @@ res.json({success:true});
 
 /* ================= START ================= */
 
-app.listen(PORT, () => {
-  console.log("API running on " + PORT);
+const server = http.createServer(app);
+
+const io = new Server(server, {
+  cors: { origin: "*" }
+});
+
+io.on("connection", (socket) => {
+  console.log("🟢 Client connected");
+
+  socket.on("disconnect", () => {
+    console.log("🔴 Client disconnected");
+  });
+});
+
+server.listen(PORT, () => {
+  console.log("API + WebSocket running on " + PORT);
 });
