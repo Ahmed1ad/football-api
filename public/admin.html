@@ -6,405 +6,323 @@
 
 <style>
 :root{
-  --bg:#070d1a;
-  --card:#0f1a33;
-  --accent:#1eb0a0;
-  --muted:#9aa4b2;
-  --danger:#ef4444;
+--bg:#070d1a;
+--card:#0f1a33;
+--accent:#1eb0a0;
+--danger:#ef4444;
+--muted:#9aa4b2;
 }
 
 *{box-sizing:border-box}
 
 body{
-  margin:0;
-  font-family:system-ui, -apple-system, Segoe UI, Roboto, Arial;
-  background:linear-gradient(180deg,#050b18,#070d1a);
-  color:#fff;
+margin:0;
+font-family:system-ui;
+background:linear-gradient(180deg,#050b18,#070d1a);
+color:white;
 }
 
 header{
-  padding:16px;
-  background:#0b1228;
-  text-align:center;
-  font-size:20px;
-  font-weight:700;
-  letter-spacing:.3px;
+padding:16px;
+background:#0b1228;
+text-align:center;
+font-size:20px;
+font-weight:bold;
 }
 
 .container{
-  padding:16px;
-  display:grid;
-  grid-template-columns:repeat(auto-fit,minmax(320px,1fr));
-  gap:16px;
+padding:16px;
+display:grid;
+grid-template-columns:repeat(auto-fit,minmax(320px,1fr));
+gap:16px;
 }
 
 .card{
-  background:var(--card);
-  border-radius:14px;
-  padding:14px;
-  box-shadow:0 10px 25px rgba(0,0,0,.35);
+background:var(--card);
+border-radius:14px;
+padding:14px;
+box-shadow:0 10px 25px rgba(0,0,0,.35);
 }
 
-.card h3{
-  margin:0 0 8px;
-}
+.card h3{margin:0 0 8px}
 
 .row{
-  display:grid;
-  grid-template-columns:repeat(2,1fr);
-  gap:8px;
+display:grid;
+grid-template-columns:1fr 1fr;
+gap:8px;
 }
 
-input,select,button{
-  width:100%;
-  padding:9px 10px;
-  border-radius:8px;
-  border:1px solid #1b2548;
-  background:#0a1330;
-  color:#fff;
+input,select{
+width:100%;
+padding:9px;
+border-radius:8px;
+border:1px solid #1b2548;
+background:#0a1330;
+color:white;
 }
-
-input::placeholder{color:#7f8bb0}
 
 button{
-  background:var(--accent);
-  border:none;
-  color:#001;
-  font-weight:700;
-  cursor:pointer;
-}
-
-button.secondary{
-  background:#0b1f2a;
-  color:#d1fae5;
-  border:1px solid #164e63;
+padding:9px;
+border-radius:8px;
+border:none;
+background:var(--accent);
+font-weight:bold;
+cursor:pointer;
 }
 
 button.danger{
-  background:transparent;
-  color:#fecaca;
-  border:1px solid #7f1d1d;
-}
-
-.toolbar{
-  display:flex;
-  gap:8px;
-  align-items:center;
-  margin-bottom:8px;
+background:transparent;
+color:#fecaca;
+border:1px solid #7f1d1d;
 }
 
 .table-wrap{
-  max-height:340px;
-  overflow:auto;
-  border-radius:10px;
-  border:1px solid #1b2548;
+max-height:340px;
+overflow:auto;
+border:1px solid #1b2548;
+border-radius:10px;
 }
 
 table{
-  width:100%;
-  border-collapse:collapse;
-  font-size:13px;
+width:100%;
+border-collapse:collapse;
+font-size:13px;
+text-align:center;
 }
 
 th,td{
-  padding:8px;
-  border-bottom:1px solid #1b2548;
-  text-align:center;
+padding:8px;
+border-bottom:1px solid #1b2548;
 }
 
 th{
-  position:sticky; top:0;
-  background:#0b1433;
+background:#0b1433;
+position:sticky;
+top:0;
 }
 
 .badge{
-  padding:3px 8px;
-  border-radius:999px;
-  font-size:11px;
-  background:#0b2a24;
-  color:#9ef0dc;
+padding:3px 8px;
+border-radius:999px;
+font-size:11px;
 }
 
-.badge.live{background:#2a0b0b;color:#fecaca}
-.badge.soon{background:#2a220b;color:#fde68a}
-.badge.ended{background:#0b2a11;color:#bbf7d0}
+.badge.live{background:#7f1d1d}
+.badge.soon{background:#854d0e}
+.badge.break{background:#1e3a8a}
+.badge.ended{background:#14532d}
 
 .logo{
-  width:22px;height:22px;object-fit:contain;vertical-align:middle;
+width:24px;
+height:24px;
+object-fit:contain;
 }
 
 .actions{
-  display:flex;gap:6px;justify-content:center;
+display:flex;
+gap:6px;
+justify-content:center;
 }
 
 .toast{
-  position:fixed;
-  bottom:20px; left:20px;
-  background:var(--accent);
-  color:#001;
-  padding:10px 14px;
-  border-radius:10px;
-  display:none;
-  box-shadow:0 10px 25px rgba(0,0,0,.35);
+position:fixed;
+bottom:20px;
+left:20px;
+background:var(--accent);
+color:black;
+padding:10px 14px;
+border-radius:10px;
+display:none;
 }
-
-.muted{color:var(--muted)}
-.small{font-size:12px}
 </style>
 </head>
 
 <body>
 
-<header>⚽ لوحة تحكم كرة القدم — Admin</header>
+<header>⚽ لوحة تحكم كرة القدم</header>
 
 <div class="container">
 
-  <!-- إضافة بطولة -->
-  <div class="card">
-    <h3>إضافة بطولة</h3>
-    <div class="row">
-      <input id="l_name" placeholder="اسم البطولة">
-      <input id="l_logo" placeholder="رابط الشعار">
-    </div>
-    <input id="l_link" placeholder="رابط الموقع (اختياري)">
-    <button onclick="addLeague()">إضافة البطولة</button>
-  </div>
+<div class="card">
+<h3>إضافة بطولة</h3>
+<input id="l_name" placeholder="اسم البطولة">
+<input id="l_logo" placeholder="رابط الشعار">
+<input id="l_link" placeholder="رابط الموقع">
+<button onclick="addLeague()">إضافة</button>
+</div>
 
-  <!-- إضافة فريق -->
-  <div class="card">
-    <h3>إضافة فريق</h3>
-    <div class="row">
-      <input id="t_name" placeholder="اسم الفريق">
-      <input id="t_logo" placeholder="رابط الشعار">
-    </div>
-    <input id="t_link" placeholder="رابط الموقع (اختياري)">
-    <button onclick="addTeam()">إضافة الفريق</button>
-  </div>
+<div class="card">
+<h3>إضافة فريق</h3>
+<input id="t_name" placeholder="اسم الفريق">
+<input id="t_logo" placeholder="رابط الشعار">
+<input id="t_link" placeholder="رابط الموقع">
+<button onclick="addTeam()">إضافة</button>
+</div>
 
-  <!-- إضافة مباراة -->
-  <div class="card">
-    <h3>إضافة مباراة</h3>
-    <div class="row">
-      <input id="m_league" placeholder="ID البطولة">
-      <input id="m_time" placeholder="2026-01-27T21:00:00Z">
-    </div>
-    <div class="row">
-      <input id="m_home" placeholder="ID الفريق صاحب الأرض">
-      <input id="m_away" placeholder="ID الفريق الضيف">
-    </div>
-    <input id="m_stream" placeholder="رابط البث">
-    <button onclick="addMatch()">إضافة المباراة</button>
-  </div>
+<div class="card">
+<h3>إضافة مباراة</h3>
+<div class="row">
+<input id="m_league" placeholder="ID البطولة">
+<input id="m_time" placeholder="2026-01-27T21:00:00Z">
+</div>
+<div class="row">
+<input id="m_home" placeholder="ID صاحب الأرض">
+<input id="m_away" placeholder="ID الضيف">
+</div>
+<input id="m_stream" placeholder="رابط البث">
+<button onclick="addMatch()">إضافة</button>
+</div>
 
 </div>
 
 <div class="container">
 
-  <!-- البطولات -->
-  <div class="card">
-    <div class="toolbar">
-      <strong>البطولات</strong>
-      <span class="muted small">عرض + حذف</span>
-    </div>
-    <div class="table-wrap">
-      <table id="leaguesTbl">
-        <thead><tr><th>ID</th><th>الشعار</th><th>الاسم</th><th>إجراء</th></tr></thead>
-        <tbody></tbody>
-      </table>
-    </div>
-  </div>
+<div class="card">
+<h3>البطولات</h3>
+<div class="table-wrap">
+<table id="leaguesTbl">
+<thead><tr><th>ID</th><th>شعار</th><th>اسم</th><th>حذف</th></tr></thead>
+<tbody></tbody>
+</table>
+</div>
+</div>
 
-  <!-- الفرق -->
-  <div class="card">
-    <div class="toolbar">
-      <strong>الفرق (تعديل مباشر)</strong>
-      <span class="muted small">اسم + شعار</span>
-    </div>
-    <div class="table-wrap">
-      <table id="teamsTbl">
-        <thead><tr><th>ID</th><th>الاسم</th><th>الشعار</th><th>حفظ</th><th>حذف</th></tr></thead>
-        <tbody></tbody>
-      </table>
-    </div>
-  </div>
+<div class="card">
+<h3>الفرق</h3>
+<div class="table-wrap">
+<table id="teamsTbl">
+<thead><tr><th>ID</th><th>اسم</th><th>شعار</th><th>حفظ</th><th>حذف</th></tr></thead>
+<tbody></tbody>
+</table>
+</div>
+</div>
 
-  <!-- المباريات -->
-  <div class="card">
-    <div class="toolbar">
-      <strong>المباريات</strong>
-      <select id="leagueFilter" onchange="loadAll()"></select>
-      <span class="muted small">فلترة حسب البطولة</span>
-    </div>
-    <div class="table-wrap">
-      <table id="matchesTbl">
-        <thead>
-          <tr>
-            <th>ID</th><th>المباراة</th><th>الحالة</th>
-            <th>النتيجة</th><th>الوقت</th><th>الرابط</th><th>حفظ</th><th>حذف</th>
-          </tr>
-        </thead>
-        <tbody></tbody>
-      </table>
-    </div>
-  </div>
+<div class="card">
+<div style="display:flex;gap:8px;margin-bottom:6px">
+<select id="leagueFilter" onchange="loadAll()"></select>
+<button onclick="loadAll()">🔄 تحديث</button>
+</div>
+
+<div class="table-wrap">
+<table id="matchesTbl">
+<thead>
+<tr>
+<th>ID</th><th>المباراة</th><th>الحالة</th>
+<th>النتيجة</th><th>الوقت</th><th>الرابط</th><th>حفظ</th><th>حذف</th>
+</tr>
+</thead>
+<tbody></tbody>
+</table>
+</div>
+</div>
 
 </div>
 
 <div id="toast" class="toast"></div>
 
 <script>
-/* ================= الإعدادات ================= */
-const ADMIN_KEY = "https://api-key-8vox.onrender.com"; // ⚠️ غيّرها لتطابق Render
-const headers = () => ({
-  "Content-Type":"application/json",
-  "x-api-key": ADMIN_KEY
-});
+const ADMIN_KEY="123456"; // غيّرها
+const H=()=>({"Content-Type":"application/json","x-api-key":ADMIN_KEY});
 
-/* ================= أدوات ================= */
-function toast(msg){
-  const t=document.getElementById("toast");
-  t.innerText=msg; t.style.display="block";
-  setTimeout(()=>t.style.display="none",2200);
-}
+function toast(t){toastEl.innerText=t;toastEl.style.display="block";setTimeout(()=>toastEl.style.display="none",2000);}
 
-async function api(url, opts={}){
-  const r = await fetch(url, opts);
-  if(!r.ok){
-    const t = await r.text();
-    throw new Error(t || r.status);
-  }
-  return r.json();
-}
-
-/* ================= CRUD ================= */
+async function api(u,o={}){const r=await fetch(u,o);if(!r.ok)throw "";return r.json();}
 
 async function addLeague(){
-  await api("/admin/league",{method:"POST",headers:headers(),body:JSON.stringify({
-    name:l_name.value, logo:l_logo.value, link:l_link.value
-  })});
-  toast("تمت إضافة البطولة");
-  loadAll();
+await api("/admin/league",{method:"POST",headers:H(),body:JSON.stringify({name:l_name.value,logo:l_logo.value,link:l_link.value})});
+toast("تمت إضافة البطولة");loadAll();
 }
 
 async function delLeague(id){
-  if(!confirm("حذف البطولة؟")) return;
-  await api("/admin/league/"+id,{method:"DELETE",headers:headers()});
-  toast("تم حذف البطولة");
-  loadAll();
+if(!confirm("حذف البطولة؟"))return;
+await api("/admin/league/"+id,{method:"DELETE",headers:H()});
+toast("تم حذف البطولة");loadAll();
 }
 
 async function addTeam(){
-  await api("/admin/team",{method:"POST",headers:headers(),body:JSON.stringify({
-    name:t_name.value, logo:t_logo.value, link:t_link.value
-  })});
-  toast("تمت إضافة الفريق");
-  loadAll();
+await api("/admin/team",{method:"POST",headers:H(),body:JSON.stringify({name:t_name.value,logo:t_logo.value,link:t_link.value})});
+toast("تمت إضافة الفريق");loadAll();
 }
 
 async function saveTeam(id){
-  await api("/admin/team/"+id,{method:"PUT",headers:headers(),body:JSON.stringify({
-    name:document.getElementById("tn"+id).value,
-    logo:document.getElementById("tl"+id).value
-  })});
-  toast("تم تحديث الفريق");
+await api("/admin/team/"+id,{method:"PUT",headers:H(),body:JSON.stringify({name:document.getElementById("tn"+id).value,logo:document.getElementById("tl"+id).value})});
+toast("تم تحديث الفريق");
 }
 
 async function delTeam(id){
-  if(!confirm("حذف الفريق؟")) return;
-  await api("/admin/team/"+id,{method:"DELETE",headers:headers()});
-  toast("تم حذف الفريق");
-  loadAll();
+if(!confirm("حذف الفريق؟"))return;
+await api("/admin/team/"+id,{method:"DELETE",headers:H()});
+toast("تم حذف الفريق");loadAll();
 }
 
 async function addMatch(){
-  await api("/admin/match",{method:"POST",headers:headers(),body:JSON.stringify({
-    league_id:+m_league.value,
-    home_team:+m_home.value,
-    away_team:+m_away.value,
-    match_time:m_time.value,
-    stream:m_stream.value
-  })});
-  toast("تمت إضافة المباراة");
-  loadAll();
+await api("/admin/match",{method:"POST",headers:H(),body:JSON.stringify({
+league_id:+m_league.value,
+home_team:+m_home.value,
+away_team:+m_away.value,
+match_time:m_time.value,
+stream:m_stream.value
+})});
+toast("تمت إضافة المباراة");loadAll();
 }
 
 async function saveMatch(id){
-  await api("/admin/match/"+id,{method:"PUT",headers:headers(),body:JSON.stringify({
-    home_score:+document.getElementById("hs"+id).value,
-    away_score:+document.getElementById("as"+id).value,
-    match_time:document.getElementById("mt"+id).value,
-    stream:document.getElementById("st"+id).value
-  })});
-  toast("تم تحديث المباراة");
+await api("/admin/match/"+id,{method:"PUT",headers:H(),body:JSON.stringify({
+home_score:+document.getElementById("hs"+id).value,
+away_score:+document.getElementById("as"+id).value,
+match_time:document.getElementById("mt"+id).value,
+stream:document.getElementById("st"+id).value
+})});
+toast("تم تحديث المباراة");
 }
 
 async function delMatch(id){
-  if(!confirm("حذف المباراة؟")) return;
-  await api("/admin/match/"+id,{method:"DELETE",headers:headers()});
-  toast("تم حذف المباراة");
-  loadAll();
+if(!confirm("حذف المباراة؟"))return;
+await api("/admin/match/"+id,{method:"DELETE",headers:H()});
+toast("تم حذف المباراة");loadAll();
 }
-
-/* ================= تحميل البيانات ================= */
 
 async function loadAll(){
-  const leagues = await api("/leagues");
-  const teams   = await api("/teams");
-  const matches = await api("/matches");
+const leagues=await api("/leagues");
+const teams=await api("/teams");
+const matches=await api("/matches");
 
-  // فلتر البطولات
-  const lf=document.getElementById("leagueFilter");
-  lf.innerHTML = `<option value="">كل البطولات</option>` + leagues.map(l=>`<option value="${l.id}">${l.name}</option>`).join("");
+leagueFilter.innerHTML=`<option value="">كل البطولات</option>`+leagues.map(l=>`<option value=${l.id}>${l.name}</option>`).join("");
 
-  // جدول البطولات
-  const ltb=document.querySelector("#leaguesTbl tbody");
-  ltb.innerHTML = leagues.map(l=>`
-    <tr>
-      <td>${l.id}</td>
-      <td><img class="logo" src="${l.logo||''}"></td>
-      <td>${l.name}</td>
-      <td><button class="danger" onclick="delLeague(${l.id})">حذف</button></td>
-    </tr>
-  `).join("");
+leaguesTbl.querySelector("tbody").innerHTML=leagues.map(l=>`
+<tr><td>${l.id}</td><td><img class=logo src="${l.logo||""}"></td><td>${l.name}</td>
+<td><button class=danger onclick="delLeague(${l.id})">حذف</button></td></tr>`).join("");
 
-  // جدول الفرق (تعديل مباشر)
-  const ttb=document.querySelector("#teamsTbl tbody");
-  ttb.innerHTML = teams.map(t=>`
-    <tr>
-      <td>${t.id}</td>
-      <td><input id="tn${t.id}" value="${t.name}"></td>
-      <td><input id="tl${t.id}" value="${t.logo||''}"></td>
-      <td><button onclick="saveTeam(${t.id})">حفظ</button></td>
-      <td><button class="danger" onclick="delTeam(${t.id})">حذف</button></td>
-    </tr>
-  `).join("");
+teamsTbl.querySelector("tbody").innerHTML=teams.map(t=>`
+<tr><td>${t.id}</td>
+<td><input id=tn${t.id} value="${t.name}"></td>
+<td><input id=tl${t.id} value="${t.logo||""}"></td>
+<td><button onclick="saveTeam(${t.id})">حفظ</button></td>
+<td><button class=danger onclick="delTeam(${t.id})">حذف</button></td></tr>`).join("");
 
-  // جدول المباريات + فلترة
-  const sel = lf.value;
-  const list = matches.results.filter(m=>!sel || m.league.id==sel);
+const sel=leagueFilter.value;
+const list=matches.results.filter(m=>!sel||m.league.id==sel);
 
-  const mtb=document.querySelector("#matchesTbl tbody");
-  mtb.innerHTML = list.map(m=>`
-    <tr>
-      <td>${m.id}</td>
-      <td>${m.home.name} × ${m.away.name}</td>
-      <td><span class="badge ${m.status}">${m.status}</span></td>
-      <td>
-        <input id="hs${m.id}" value="${m.score.home??0}" style="width:42px">
-        :
-        <input id="as${m.id}" value="${m.score.away??0}" style="width:42px">
-      </td>
-      <td><input id="mt${m.id}" value="${m.match_time}"></td>
-      <td><input id="st${m.id}" value="${m.stream||''}"></td>
-      <td class="actions"><button onclick="saveMatch(${m.id})">حفظ</button></td>
-      <td class="actions"><button class="danger" onclick="delMatch(${m.id})">حذف</button></td>
-    </tr>
-  `).join("");
+matchesTbl.querySelector("tbody").innerHTML=list.map(m=>`
+<tr>
+<td>${m.id}</td>
+<td>${m.home.name} × ${m.away.name}</td>
+<td><span class="badge ${m.status}">${m.status} ${m.phase||""}</span></td>
+<td>
+<input id=hs${m.id} value="${m.score.home??0}" style="width:40px"> :
+<input id=as${m.id} value="${m.score.away??0}" style="width:40px">
+<small>${m.minute??""}'</small>
+</td>
+<td><input id=mt${m.id} value="${m.match_time}"></td>
+<td><input id=st${m.id} value="${m.stream||""}"></td>
+<td class=actions><button onclick="saveMatch(${m.id})">حفظ</button></td>
+<td class=actions><button class=danger onclick="delMatch(${m.id})">حذف</button></td>
+</tr>`).join("");
 }
 
-/* تحميل أولي + تحديث حي */
+const toastEl=document.getElementById("toast");
 loadAll();
-setInterval(loadAll, 5000); // Live Refresh كل 5 ثواني
+setInterval(loadAll,5000);
 </script>
 
 </body>
